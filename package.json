@@ -10,7 +10,7 @@
     "eas:login": "eas login",
     "eas:init": "eas init",
     "build:apk": "dotenv -e .env -- npx eas-cli build --platform android --profile preview --non-interactive --wait",
-    "download:apk": "mkdir -p builds && cd builds && dotenv -e .env -- npx eas-cli build:download --platform android --non-interactive",
+    "download:apk": "dotenv -e .env -- node ./scripts/download-apk.js",
     "build:android:prod": "dotenv -e .env -- npx eas-cli build --platform android --profile production"
   },
   "dependencies": {
