@@ -1,131 +1,164 @@
-import { Stack } from "expo-router";
-import { useState } from "react";
-import { FlatList, StyleSheet, TouchableOpacity } from "react-native";
+import { type Href, useFocusEffect, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  View,
+} from "react-native";
 
+import { NewCalendarModal } from "@/components/new-calendar-modal";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
+import { STAGES } from "@/constants/stages";
+import {
+  createCalendarId,
+  loadCalendars,
+  upsertCalendar,
+} from "@/lib/calendar-storage";
+import { addDays, formatDateRu, parseLocalDate, toLocalDateString } from "@/lib/dates";
+import {
+  areNotificationsSupported,
+  requestNotificationPermissions,
+  syncCalendarNotifications,
+} from "@/lib/notifications";
+import type { BeeCalendar } from "@/types/calendar";
 
-// Этапы развития матки (день от прививки -> событие)
-// День 0 - это день прививки (Grafting)
-const STAGES = [
-  {
-    day: 0,
-    title: "📅 День прививки",
-    description: "Перенос личинок (Grafting).",
-    important: true,
-  },
-  {
-    day: 3,
-    title: "🔍 Проверка приема",
-    description: "Проверьте, сколько личинок принято семьей-воспитательницей.",
-    important: false,
-  },
-  {
-    day: 5,
-    title: "🧱 Запечатывание",
-    description: "Пчелы запечатывают маточники. Осторожно, не трясти!",
-    important: false,
-  },
-  {
-    day: 10,
-    title: "📦 Изоляция / Перенос",
-    description:
-      "Перенос маточников в нуклеусы или клеточки (за 2 дня до выхода).",
-    important: true,
-  },
-  {
-    day: 12,
-    title: "👑 Выход маток",
-    description: "Рождение маток. Проверка выхода.",
-    important: true,
-  },
-  {
-    day: 17,
-    title: "✈️ Облет",
-    description: "Ориентировочные и брачные облеты (при хорошей погоде).",
-    important: false,
-  },
-  {
-    day: 25,
-    title: "🥚 Проверка засева",
-    description: "Контроль яйцекладки. Если есть яйца — матка плодная.",
-    important: true,
-  },
-];
+function getNextImportantStage(startDate: string) {
+  const start = parseLocalDate(startDate);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-function RearingCalendarScreen() {
-  // По умолчанию считаем от сегодняшнего дня
-  const [startDate, setStartDate] = useState(new Date());
+  for (const stage of STAGES) {
+    if (!stage.important) {
+      continue;
+    }
+    const eventDate = addDays(start, stage.day);
+    eventDate.setHours(0, 0, 0, 0);
+    if (eventDate >= today) {
+      return { stage, eventDate };
+    }
+  }
+  return null;
+}
 
-  // Функция добавления дней к дате
-  const addDays = (date: Date, days: number) => {
-    const result = new Date(date);
-    result.setDate(result.getDate() + days);
-    return result;
+export default function CalendarListScreen() {
+  const router = useRouter();
+  const [calendars, setCalendars] = useState<BeeCalendar[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    const items = await loadCalendars();
+    setCalendars(items);
+    setLoading(false);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      refresh();
+    }, [refresh]),
+  );
+
+  const handleCreate = async (name: string) => {
+    const calendar: BeeCalendar = {
+      id: createCalendarId(),
+      name,
+      startDate: toLocalDateString(new Date()),
+      notificationsEnabled: true,
+      createdAt: new Date().toISOString(),
+    };
+
+    await upsertCalendar(calendar);
+    await requestNotificationPermissions();
+    await syncCalendarNotifications(calendar);
+    router.push({
+      pathname: "/calendar/[id]",
+      params: { id: calendar.id },
+    } as unknown as Href);
   };
 
-  // Форматирование даты (ДД.ММ.ГГГГ)
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("ru-RU", {
-      day: "numeric",
-      month: "long",
-      weekday: "short",
-    });
-  };
-
-  const renderItem = ({ item }: { item: (typeof STAGES)[0] }) => {
-    const eventDate = addDays(startDate, item.day);
-    const isToday = new Date().toDateString() === eventDate.toDateString();
+  const renderItem = ({ item }: { item: BeeCalendar }) => {
+    const next = getNextImportantStage(item.startDate);
 
     return (
-      <ThemedView style={[styles.card, isToday && styles.activeCard]}>
-        <ThemedView style={styles.dateContainer}>
-          <ThemedText type="defaultSemiBold" style={styles.dayOffset}>
-            День {item.day}
+      <Pressable
+        onPress={() =>
+          router.push({
+            pathname: "/calendar/[id]",
+            params: { id: item.id },
+          } as unknown as Href)
+        }
+        style={({ pressed }) => [styles.card, pressed && styles.cardPressed]}
+      >
+        <ThemedView style={styles.cardInner}>
+          <ThemedText type="defaultSemiBold" style={styles.cardTitle}>
+            {item.name}
           </ThemedText>
-          <ThemedText style={styles.dateText}>
-            {formatDate(eventDate)}
+          <ThemedText style={styles.cardMeta}>
+            Прививка: {formatDateRu(parseLocalDate(item.startDate))}
           </ThemedText>
+          {next ? (
+            <ThemedText style={styles.cardNext}>
+              Ближайшее: {next.stage.title} — {formatDateRu(next.eventDate)}
+            </ThemedText>
+          ) : (
+            <ThemedText style={styles.cardNext}>Все важные этапы пройдены</ThemedText>
+          )}
+          {areNotificationsSupported() && item.notificationsEnabled && (
+            <ThemedText style={styles.badge}>🔔 Уведомления включены</ThemedText>
+          )}
         </ThemedView>
-
-        <ThemedView style={styles.infoContainer}>
-          <ThemedText
-            type="subtitle"
-            style={item.important ? styles.importantTitle : undefined}
-          >
-            {item.title}
-          </ThemedText>
-          <ThemedText style={styles.description}>{item.description}</ThemedText>
-        </ThemedView>
-      </ThemedView>
+      </Pressable>
     );
   };
 
   return (
     <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: "Календарь матковода" }} />
-
       <ThemedView style={styles.header}>
-        <ThemedText type="title">Партия от {formatDate(startDate)}</ThemedText>
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => setStartDate(new Date())}
-        >
-          <ThemedText style={styles.buttonText}>Сбросить на сегодня</ThemedText>
-        </TouchableOpacity>
+        <ThemedText type="title">Календари матковода</ThemedText>
+        <ThemedText style={styles.subtitle}>
+          Отдельный календарь для каждой партии или улья
+        </ThemedText>
       </ThemedView>
 
-      <FlatList
-        data={STAGES}
-        keyExtractor={(item) => item.day.toString()}
-        renderItem={renderItem}
-        contentContainerStyle={styles.listContent}
+      {loading ? (
+        <ActivityIndicator style={styles.loader} />
+      ) : calendars.length === 0 ? (
+        <ThemedView style={styles.empty}>
+          <ThemedText style={styles.emptyText}>
+            Пока нет календарей. Создайте первый — укажите название и дату
+            прививки.
+          </ThemedText>
+        </ThemedView>
+      ) : (
+        <FlatList
+          data={calendars}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+        />
+      )}
+
+      <View style={styles.fabContainer}>
+        <Pressable
+          style={styles.fab}
+          onPress={() => setModalVisible(true)}
+        >
+          <ThemedText style={styles.fabText}>+ Новый календарь</ThemedText>
+        </Pressable>
+      </View>
+
+      <NewCalendarModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onSubmit={handleCreate}
       />
     </ThemedView>
   );
 }
-
-export default RearingCalendarScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -133,63 +166,78 @@ const styles = StyleSheet.create({
   },
   header: {
     padding: 20,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
   },
-  listContent: {
+  subtitle: {
+    marginTop: 6,
+    fontSize: 14,
+    opacity: 0.75,
+  },
+  list: {
     padding: 16,
+    paddingBottom: 100,
   },
   card: {
-    flexDirection: "row",
-    marginBottom: 16,
-    padding: 12,
+    marginBottom: 12,
     borderRadius: 12,
-    backgroundColor: "rgba(150, 150, 150, 0.1)", // Легкий фон для карточки
+    overflow: "hidden",
   },
-  activeCard: {
-    borderColor: "#FFD700", // Золотой цвет для "сегодня"
-    borderWidth: 2,
+  cardPressed: {
+    opacity: 0.85,
   },
-  dateContainer: {
-    width: 90,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRightWidth: 1,
-    borderRightColor: "#444",
-    paddingRight: 10,
-    marginRight: 10,
-    backgroundColor: "transparent",
+  cardInner: {
+    padding: 16,
+    backgroundColor: "rgba(150, 150, 150, 0.12)",
+    borderRadius: 12,
   },
-  infoContainer: {
-    flex: 1,
-    backgroundColor: "transparent",
+  cardTitle: {
+    fontSize: 17,
   },
-  dayOffset: {
+  cardMeta: {
+    marginTop: 6,
+    fontSize: 14,
+    opacity: 0.8,
+  },
+  cardNext: {
+    marginTop: 8,
+    fontSize: 13,
+    color: "#D2691E",
+  },
+  badge: {
+    marginTop: 8,
     fontSize: 12,
     opacity: 0.7,
   },
-  dateText: {
-    fontSize: 14,
+  empty: {
+    flex: 1,
+    justifyContent: "center",
+    padding: 32,
+  },
+  emptyText: {
     textAlign: "center",
-    marginTop: 4,
-  },
-  importantTitle: {
-    color: "#D2691E", // Шоколадный цвет для важных событий
-  },
-  description: {
-    fontSize: 12,
-    marginTop: 4,
     opacity: 0.8,
+    lineHeight: 22,
   },
-  button: {
-    marginTop: 10,
-    padding: 10,
+  loader: {
+    marginTop: 40,
+  },
+  fabContainer: {
+    position: "absolute",
+    bottom: 24,
+    left: 16,
+    right: 16,
+  },
+  fab: {
     backgroundColor: "#2196F3",
-    borderRadius: 8,
+    borderRadius: 12,
+    paddingVertical: 14,
     alignItems: "center",
   },
-  buttonText: {
-    color: "white",
-    fontWeight: "bold",
+  fabText: {
+    color: "#fff",
+    fontWeight: "700",
+    fontSize: 16,
   },
 });
