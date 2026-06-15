@@ -42,16 +42,16 @@ export function NewCalendarModal({ visible, onClose, onSubmit }: Props) {
       <Pressable style={styles.backdrop} onPress={handleClose}>
         <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
           <ThemedView style={styles.content}>
-            <ThemedText type="subtitle">Новый календарь</ThemedText>
+            <ThemedText type="subtitle">Новий календар</ThemedText>
             <ThemedText style={styles.hint}>
-              Укажите название партии или улья (например, «Нуклеус №3»).
+              Вкажіть назву партії чи вулика (наприклад, «Нуклеус №3»).
             </ThemedText>
             <TextInput
               style={[
                 styles.input,
                 { borderColor, color: textColor },
               ]}
-              placeholder="Название календаря"
+              placeholder="Назва календаря"
               placeholderTextColor={borderColor}
               value={name}
               onChangeText={setName}
@@ -60,14 +60,14 @@ export function NewCalendarModal({ visible, onClose, onSubmit }: Props) {
             />
             <View style={styles.actions}>
               <Pressable style={styles.secondaryButton} onPress={handleClose}>
-                <ThemedText>Отмена</ThemedText>
+                <ThemedText>Скасувати</ThemedText>
               </Pressable>
               <Pressable
                 style={[styles.primaryButton, !name.trim() && styles.disabled]}
                 onPress={handleSubmit}
                 disabled={!name.trim()}
               >
-                <ThemedText style={styles.primaryButtonText}>Создать</ThemedText>
+                <ThemedText style={styles.primaryButtonText}>Створити</ThemedText>
               </Pressable>
             </View>
           </ThemedView>

@@ -15,14 +15,14 @@ type NotificationsModule = typeof import("expo-notifications");
 let notificationsModule: NotificationsModule | null | undefined;
 let handlerInitialized = false;
 
-/** Запуск через приложение Expo Go (не собственная сборка). */
+/** Запуск через застосунок Expo Go (не власна збірка). */
 export function isExpoGo(): boolean {
   return Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 }
 
 /**
- * Локальные уведомления: только Android/iOS в development build или release,
- * не в браузере и не в Expo Go.
+ * Локальні сповіщення: лише Android/iOS у development build або release,
+ * не в браузері та не в Expo Go.
  */
 export function areNotificationsSupported(): boolean {
   if (Platform.OS !== "android" && Platform.OS !== "ios") {
@@ -36,10 +36,10 @@ export function areNotificationsSupported(): boolean {
 
 export function getNotificationsUnavailableMessage(): string | null {
   if (Platform.OS === "web") {
-    return "Уведомления доступны в мобильном приложении на Android или iOS.";
+    return "Сповіщення доступні в мобільному застосунку на Android або iOS.";
   }
   if (isExpoGo()) {
-    return "В Expo Go уведомления отключены. Соберите приложение: npm run android:run (или установите APK).";
+    return "У Expo Go сповіщення вимкнено. Зберіть застосунок: npm run android:run (або встановіть APK).";
   }
   return null;
 }
@@ -87,7 +87,7 @@ async function ensureAndroidChannel(
     return;
   }
   await Notifications.setNotificationChannelAsync(ANDROID_CHANNEL_ID, {
-    name: "События календаря",
+    name: "Події календаря",
     importance: Notifications.AndroidImportance.HIGH,
     vibrationPattern: [0, 250, 250, 250],
     lightColor: "#D2691E",

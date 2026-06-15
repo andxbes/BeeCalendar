@@ -34,7 +34,7 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files (токены, секреты)
+# локальні env-файли (токени, секрети)
 .env
 .env*.local
 

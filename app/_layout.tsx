@@ -32,7 +32,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ title: "BeeCalendar" }} />
         <Stack.Screen
           name="calendar/[id]"
-          options={{ title: "Календарь" }}
+          options={{ title: "Календар" }}
         />
       </Stack>
       <StatusBar style="auto" />

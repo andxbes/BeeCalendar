@@ -1,4 +1,4 @@
-// Fallback for using MaterialIcons on Android and web.
+// Резервний варіант MaterialIcons для Android та веб.
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
@@ -9,9 +9,9 @@ type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof Materia
 type IconSymbolName = keyof typeof MAPPING;
 
 /**
- * Add your SF Symbols to Material Icons mappings here.
- * - see Material Icons in the [Icons Directory](https://icons.expo.fyi).
- * - see SF Symbols in the [SF Symbols](https://developer.apple.com/sf-symbols/) app.
+ * Тут додаються відповідності SF Symbols → Material Icons.
+ * - Material Icons: https://icons.expo.fyi
+ * - SF Symbols: застосунок SF Symbols від Apple
  */
 const MAPPING = {
   'house.fill': 'home',
@@ -21,9 +21,8 @@ const MAPPING = {
 } as IconMapping;
 
 /**
- * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
- * This ensures a consistent look across platforms, and optimal resource usage.
- * Icon `name`s are based on SF Symbols and require manual mapping to Material Icons.
+ * Іконка: нативні SF Symbols на iOS, Material Icons на Android і веб.
+ * Назви іконок базуються на SF Symbols і потребують ручного мапінгу.
  */
 export function IconSymbol({
   name,

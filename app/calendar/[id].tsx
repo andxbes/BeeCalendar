@@ -20,7 +20,7 @@ import {
 } from "@/lib/calendar-storage";
 import {
   addDays,
-  formatDateRu,
+  formatDateUk,
   parseLocalDate,
 } from "@/lib/dates";
 import {
@@ -71,8 +71,8 @@ export default function CalendarDetailScreen() {
       const granted = await requestNotificationPermissions();
       if (!granted) {
         Alert.alert(
-          "Нет разрешения",
-          "Разрешите уведомления в настройках Android, чтобы получать напоминания о важных этапах.",
+          "Немає дозволу",
+          "Дозвольте сповіщення в налаштуваннях Android, щоб отримувати нагадування про важливі етапи.",
         );
         return;
       }
@@ -87,12 +87,12 @@ export default function CalendarDetailScreen() {
     }
 
     Alert.alert(
-      "Удалить календарь?",
-      `«${calendar.name}» и все запланированные уведомления будут удалены.`,
+      "Видалити календар?",
+      `«${calendar.name}» і всі заплановані сповіщення будуть видалені.`,
       [
-        { text: "Отмена", style: "cancel" },
+        { text: "Скасувати", style: "cancel" },
         {
-          text: "Удалить",
+          text: "Видалити",
           style: "destructive",
           onPress: async () => {
             await cancelCalendarNotifications(calendar.id);
@@ -107,8 +107,8 @@ export default function CalendarDetailScreen() {
   if (!calendar) {
     return (
       <ThemedView style={styles.container}>
-        <Stack.Screen options={{ title: "Календарь" }} />
-        <ThemedText style={styles.loading}>Загрузка…</ThemedText>
+        <Stack.Screen options={{ title: "Календар" }} />
+        <ThemedText style={styles.loading}>Завантаження…</ThemedText>
       </ThemedView>
     );
   }
@@ -127,7 +127,7 @@ export default function CalendarDetailScreen() {
             День {item.day}
           </ThemedText>
           <ThemedText style={styles.dateText}>
-            {formatDateRu(eventDate)}
+            {formatDateUk(eventDate)}
           </ThemedText>
         </ThemedView>
 
@@ -141,7 +141,7 @@ export default function CalendarDetailScreen() {
           <ThemedText style={styles.description}>{item.description}</ThemedText>
           {item.important && (
             <ThemedText style={styles.importantBadge}>
-              Важное событие · уведомление
+              Важлива подія · сповіщення
             </ThemedText>
           )}
         </ThemedView>
@@ -154,7 +154,7 @@ export default function CalendarDetailScreen() {
       <Stack.Screen options={{ title: calendar.name }} />
 
       <ThemedView style={styles.controls}>
-        <ThemedText type="defaultSemiBold">Дата прививки (день 0)</ThemedText>
+        <ThemedText type="defaultSemiBold">Дата прищепки (день 0)</ThemedText>
         <StartDatePicker
           value={calendar.startDate}
           onChange={handleStartDateChange}
@@ -163,15 +163,15 @@ export default function CalendarDetailScreen() {
         {areNotificationsSupported() ? (
           <>
             <View style={styles.switchRow}>
-              <ThemedText>Уведомления</ThemedText>
+              <ThemedText>Сповіщення</ThemedText>
               <Switch
                 value={calendar.notificationsEnabled}
                 onValueChange={toggleNotifications}
               />
             </View>
             <ThemedText style={styles.switchHint}>
-              Напоминания в 8:00 в день важных этапов: прививка, перенос, выход
-              маток, проверка засева. Работают на телефоне (Android / iOS).
+              Нагадування о 8:00 в день важливих етапів: прищепка, перенесення, вихід
+              маток, перевірка засіву. Працюють на телефоні (Android / iOS).
             </ThemedText>
           </>
         ) : (
@@ -181,7 +181,7 @@ export default function CalendarDetailScreen() {
         )}
 
         <Pressable style={styles.deleteButton} onPress={confirmDelete}>
-          <ThemedText style={styles.deleteButtonText}>Удалить календарь</ThemedText>
+          <ThemedText style={styles.deleteButtonText}>Видалити календар</ThemedText>
         </Pressable>
       </ThemedView>
 

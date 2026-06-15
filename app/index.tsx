@@ -17,7 +17,7 @@ import {
   loadCalendars,
   upsertCalendar,
 } from "@/lib/calendar-storage";
-import { addDays, formatDateRu, parseLocalDate, toLocalDateString } from "@/lib/dates";
+import { addDays, formatDateUk, parseLocalDate, toLocalDateString } from "@/lib/dates";
 import {
   areNotificationsSupported,
   requestNotificationPermissions,
@@ -98,17 +98,17 @@ export default function CalendarListScreen() {
             {item.name}
           </ThemedText>
           <ThemedText style={styles.cardMeta}>
-            Прививка: {formatDateRu(parseLocalDate(item.startDate))}
+            Прищепка: {formatDateUk(parseLocalDate(item.startDate))}
           </ThemedText>
           {next ? (
             <ThemedText style={styles.cardNext}>
-              Ближайшее: {next.stage.title} — {formatDateRu(next.eventDate)}
+              Найближче: {next.stage.title} — {formatDateUk(next.eventDate)}
             </ThemedText>
           ) : (
-            <ThemedText style={styles.cardNext}>Все важные этапы пройдены</ThemedText>
+            <ThemedText style={styles.cardNext}>Усі важливі етапи пройдені</ThemedText>
           )}
           {areNotificationsSupported() && item.notificationsEnabled && (
-            <ThemedText style={styles.badge}>🔔 Уведомления включены</ThemedText>
+            <ThemedText style={styles.badge}>🔔 Сповіщення увімкнено</ThemedText>
           )}
         </ThemedView>
       </Pressable>
@@ -118,9 +118,9 @@ export default function CalendarListScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedView style={styles.header}>
-        <ThemedText type="title">Календари матковода</ThemedText>
+        <ThemedText type="title">Календарі матковода</ThemedText>
         <ThemedText style={styles.subtitle}>
-          Отдельный календарь для каждой партии или улья
+          Окремий календар для кожної партії чи вулика
         </ThemedText>
       </ThemedView>
 
@@ -129,8 +129,8 @@ export default function CalendarListScreen() {
       ) : calendars.length === 0 ? (
         <ThemedView style={styles.empty}>
           <ThemedText style={styles.emptyText}>
-            Пока нет календарей. Создайте первый — укажите название и дату
-            прививки.
+            Поки немає календарів. Створіть перший — вкажіть назву та дату
+            прищепки.
           </ThemedText>
         </ThemedView>
       ) : (
@@ -147,7 +147,7 @@ export default function CalendarListScreen() {
           style={styles.fab}
           onPress={() => setModalVisible(true)}
         >
-          <ThemedText style={styles.fabText}>+ Новый календарь</ThemedText>
+          <ThemedText style={styles.fabText}>+ Новий календар</ThemedText>
         </Pressable>
       </View>
 

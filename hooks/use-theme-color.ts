@@ -1,5 +1,5 @@
 /**
- * Learn more about light and dark modes:
+ * Докладніше про світлу та темну тему:
  * https://docs.expo.dev/guides/color-schemes/
  */
 

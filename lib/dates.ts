@@ -16,8 +16,9 @@ export function addDays(date: Date, days: number): Date {
   return result;
 }
 
-export function formatDateRu(date: Date): string {
-  return date.toLocaleDateString("ru-RU", {
+/** Форматування локальної дати українською мовою. */
+export function formatDateUk(date: Date): string {
+  return date.toLocaleDateString("uk-UA", {
     day: "numeric",
     month: "long",
     weekday: "short",

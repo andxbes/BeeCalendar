@@ -6,10 +6,10 @@ import { createElement, useState } from "react";
 import { Platform, Pressable, StyleSheet, View } from "react-native";
 
 import { ThemedText } from "@/components/themed-text";
-import { formatDateRu, parseLocalDate, toLocalDateString } from "@/lib/dates";
+import { formatDateUk, parseLocalDate, toLocalDateString } from "@/lib/dates";
 
 type Props = {
-  /** Локальная дата YYYY-MM-DD */
+  /** Локальна дата YYYY-MM-DD */
   value: string;
   onChange: (isoDate: string) => void;
 };
@@ -86,11 +86,11 @@ export function StartDatePicker({ value, onChange }: Props) {
     return (
       <View>
         <ThemedText style={styles.dateLabel}>
-          {formatDateRu(date)}
+          {formatDateUk(date)}
         </ThemedText>
         <WebDateInput value={value} onChange={onChange} />
         <ThemedText style={styles.hint}>
-          Выберите дату прививки в поле выше
+          Оберіть дату прищепки в полі вище
         </ThemedText>
       </View>
     );
@@ -99,11 +99,11 @@ export function StartDatePicker({ value, onChange }: Props) {
   return (
     <View>
       <Pressable style={styles.button} onPress={openPicker}>
-        <ThemedText style={styles.buttonText}>{formatDateRu(date)}</ThemedText>
+        <ThemedText style={styles.buttonText}>{formatDateUk(date)}</ThemedText>
         <ThemedText style={styles.hint}>
           {Platform.OS === "ios" && showIosPicker
-            ? "Скрыть календарь"
-            : "Нажмите, чтобы изменить дату"}
+            ? "Сховати календар"
+            : "Натисніть, щоб змінити дату"}
         </ThemedText>
       </Pressable>
 
@@ -113,7 +113,7 @@ export function StartDatePicker({ value, onChange }: Props) {
           mode="date"
           display="spinner"
           onChange={handlePickerChange}
-          locale="ru-RU"
+          locale="uk-UA"
         />
       )}
     </View>
